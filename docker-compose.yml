@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: 'nest_mongo'
+    volumes:
+      - mongodb_data_container:/data/db
+    env_file:
+      - .env
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+networks:
+  webnet:
+volumes:
+  mongodb_data_container:
