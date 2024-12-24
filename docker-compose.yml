@@ -1,16 +1,29 @@
-version: '3.7'
+version: '3.8'
 
 services:
   mongo:
     image: mongo:latest
-    container_name: 'nest_mongo'
+    container_name: nest_mongo
     volumes:
       - mongodb_data_container:/data/db
-    env_file:
-      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
     ports:
-      - ${MONGO_PORT}:${MONGO_PORT}
-networks:
-  webnet:
+      - 27017:27017
+
+  nestjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_app
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://root:example@mongo:27017/my_database?authSource=admin
+      PORT: 3000
+
 volumes:
   mongodb_data_container:

@@ -1,14 +1,7 @@
-# Use Node.js as the base image
-FROM node:18
+# Use an official Node.js image as the base
+FROM node:18-alpine as build
 
-# Install MongoDB in the image
-RUN apt-get update && apt-get install -y gnupg && \
-    wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
-    echo "deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/6.0 main" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \
-    apt-get update && apt-get install -y mongodb-org && \
-    mkdir -p /data/db
-
-# Set the working directory for the NestJS app
+# Set the working directory
 WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json
@@ -17,20 +10,25 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application
+# Copy the source code
 COPY . .
 
-# Build the NestJS application
+# Build the NestJS app
 RUN npm run build
 
-# Install Supervisor to manage multiple processes
-RUN apt-get install -y supervisor
+# Use a lightweight image for the final container
+FROM node:18-alpine
 
-# Copy the Supervisor configuration file
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Set the working directory
+WORKDIR /usr/src/app
 
-# Expose MongoDB and NestJS ports
-EXPOSE 27017 3000
+# Copy the build files and dependencies from the build stage
+COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/package*.json ./
 
-# Start Supervisor to manage MongoDB and NestJS
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Expose the port for the NestJS app
+EXPOSE 3000
+
+# Start the NestJS app
+CMD ["node", "dist/main.js"]
