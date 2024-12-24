@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: nestjs-mongo-app
+    env: docker
+    plan: starter
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: MONGO_URI
+        value: mongodb://localhost:27017/your-database-name
+    healthCheckPath: /
