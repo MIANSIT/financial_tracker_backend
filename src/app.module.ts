@@ -12,10 +12,10 @@ import { UserModule } from './user/user.module';
       isGlobal: true,
     }),
     MongooseModule.forRoot(
-      process.env.MONGODB_URI ||
-      (() => {
-        throw new Error('MONGODB_URI environment variable is not defined!');
-      })(),
+      process.env.MONGO_URI ||
+        (() => {
+          throw new Error('MONGO_URI environment variable is not defined!');
+        })(),
     ),
     UserModule,
   ],
@@ -23,7 +23,7 @@ import { UserModule } from './user/user.module';
   providers: [AppService],
 })
 export class AppModule {
-  constructor() {
-    console.log('MongoDB URI:', process.env.MONGODB_URI);
-  }
+  // constructor() {
+  //   console.log('MongoDB URI:', process.env.MONGODB_URI);
+  // }
 }
